@@ -2,7 +2,7 @@ from jose import jwt, JWTError
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from main.models.models import UserModel
+from main.models.models import UserModel, HistoryModel
 from main.validators.auth_user import (
     hash_password,
     authenticate_user,
