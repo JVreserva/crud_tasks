@@ -2,12 +2,34 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from main.routes.user_routes import users_routes
-from main.connection import Base, engine
+from main.routes.task_routes import tasks_routes
+from main.connection import Base, engine, SessionLocal
+from main.models.models import StatusModel
+
+STATUS_SEED = [
+    {"idt_status": 1, "nom_status": "pendente"},
+    {"idt_status": 2, "nom_status": "fazendo"},
+    {"idt_status": 3, "nom_status": "pausado"},
+    {"idt_status": 4, "nom_status": "concluido"},
+]
+
+
+def seed_status(db):
+    for item in STATUS_SEED:
+        exists = db.query(StatusModel).filter(StatusModel.idt_status == item["idt_status"]).first()
+        if not exists:
+            db.add(StatusModel(**item))
+    db.commit()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
+    db = SessionLocal()
+    try:
+        seed_status(db)
+    finally:
+        db.close()
     yield
 
 
@@ -22,3 +44,4 @@ app.add_middleware(
 )
 
 app.include_router(users_routes)
+app.include_router(tasks_routes)

@@ -36,6 +36,7 @@ Criar um sistema simples onde usuários podem se cadastrar, fazer login e gerenc
 - Apenas dono da tarefa pode alterá-la
 - O React Native consegue listar as tarefas do usuário logado
 - Código com baixo acoplamento entre camadas (ex: use case não conhece FastAPI ou SQLAlchemy diretamente)
+- Sempre priorizar código limpo e arquitetura
 - Arquivo README.md com a descrição dos passos para executar o projeto
 
 ### Considerações
