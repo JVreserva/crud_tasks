@@ -25,7 +25,8 @@ def seed_status(db):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    Base.metadata.create_all(bind=engine)
+    # Tables are now managed by Alembic migrations
+    # Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     try:
         seed_status(db)

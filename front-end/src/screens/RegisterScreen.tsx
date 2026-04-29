@@ -1,38 +1,27 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import ApiService from '../services/api';
-import { AuthRequest } from '../types/auth';
+import { useAuthActions } from '../contexts/AuthActionsContext';
 
 const RegisterScreen: React.FC = () => {
   const navigation = useNavigation();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const {
+    registerEmail,
+    setRegisterEmail,
+    registerPassword,
+    setRegisterPassword,
+    registerConfirmPassword,
+    setRegisterConfirmPassword,
+    registerErrorMessage,
+    handleRegister,
+    navigateToLogin
+  } = useAuthActions();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleRegister = async () => {
-    if (!email || !password || !confirmPassword) {
-      Alert.alert('Erro', 'Por favor, preencha todos os campos.');
-      return;
-    }
-    if (password !== confirmPassword) {
-      Alert.alert('Erro', 'As senhas não coincidem.');
-      return;
-    }
-
+  const handleRegisterWrapper = async () => {
     setIsLoading(true);
     try {
-      const payload: AuthRequest = { email, password };
-      const response = await ApiService.register(payload);
-      Alert.alert('Sucesso', response.message, [
-        {
-          text: 'OK',
-          onPress: () => navigation.navigate('Login' as never),
-        },
-      ]);
-    } catch (err: any) {
-      Alert.alert('Erro', err.response?.data?.message || 'Falha ao registrar.');
+      await handleRegister();
     } finally {
       setIsLoading(false);
     }
@@ -44,26 +33,36 @@ const RegisterScreen: React.FC = () => {
       <TextInput
         style={styles.input}
         placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
+        value={registerEmail}
+        onChangeText={(text) => {
+          setRegisterEmail(text);
+          // setErrorMessage(null); // This is now handled in the context
+        }}
         keyboardType="email-address"
         autoCapitalize="none"
       />
       <TextInput
         style={styles.input}
         placeholder="Senha"
-        value={password}
-        onChangeText={setPassword}
+        value={registerPassword}
+        onChangeText={(text) => {
+          setRegisterPassword(text);
+          // setErrorMessage(null); // This is now handled in the context
+        }}
         secureTextEntry
       />
       <TextInput
         style={styles.input}
         placeholder="Confirmar Senha"
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
+        value={registerConfirmPassword}
+        onChangeText={(text) => {
+          setRegisterConfirmPassword(text);
+          // setErrorMessage(null); // This is now handled in the context
+        }}
         secureTextEntry
       />
-      <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={isLoading}>
+      {registerErrorMessage ? <Text style={styles.errorText}>{registerErrorMessage}</Text> : null}
+      <TouchableOpacity style={styles.button} onPress={handleRegisterWrapper} disabled={isLoading}>
         <Text style={styles.buttonText}>{isLoading ? 'Registrando...' : 'Registrar'}</Text>
       </TouchableOpacity>
     </View>
@@ -102,6 +101,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  errorText: {
+    color: '#cc0000',
+    marginBottom: 10,
+    textAlign: 'center',
   },
 });
 

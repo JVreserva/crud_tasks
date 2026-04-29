@@ -9,14 +9,23 @@ from main.validators.auth_user import (
     create_access_token,
     create_refresh_token
 )
-from decouple import config
+import os
+from dotenv import load_dotenv
 
-SECRET_KEY = config("SECRET_KEY")
-ALGORITHM = config("ALGORITHM")
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM")
 
 
 def create_user(body, db: Session):
     try:
+        # Verificar se o email já existe
+        existing_user = db.query(UserModel).filter(UserModel.des_email == body.email).first()
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email já cadastrado"
+            )
+
         hashed_password = hash_password(body.password)
 
         user = UserModel(
@@ -36,6 +45,8 @@ def create_user(body, db: Session):
             }
         }
 
+    except HTTPException:
+        raise
     except Exception:
         db.rollback()
         raise HTTPException(

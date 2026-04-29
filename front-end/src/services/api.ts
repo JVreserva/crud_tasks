@@ -3,13 +3,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthRequest, LoginResponse, RegisterResponse } from '../types/auth';
 import { CreateTaskRequest } from '../types/task';
 
+const baseURL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000';
+
 class ApiService {
   private api: AxiosInstance;
   private static instance: ApiService;
 
   private constructor() {
     this.api = axios.create({
-      baseURL: 'http://localhost:8000', // Ajustar conforme necessário
+      baseURL: baseURL,
       timeout: 10000,
     });
 
@@ -74,7 +76,16 @@ class ApiService {
     return response.data;
   }
 
-  // Outros métodos podem ser adicionados aqui
+  public async updateTask(idt_tarefa: number, data: any): Promise<any> {
+    const response: AxiosResponse<any> = await this.api.put(`/tasks/${idt_tarefa}`, data);
+    return response.data;
+  }
+
+  public async listStatus(): Promise<any> {
+    const response: AxiosResponse<any> = await this.api.get('/status/list');
+    return response.data.status;
+  }
 }
+
 
 export default ApiService.getInstance();

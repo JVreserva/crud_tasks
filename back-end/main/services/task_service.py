@@ -108,6 +108,7 @@ def list_my_tasks(current_user, db: Session):
             TaskModel.nom_tarefa,
             TaskModel.des_tarefa,
             TaskModel.ind_ativo,
+            HistoryModel.idt_status,
             StatusModel.ind_status
         )\
         .outerjoin(subquery, subquery.c.idt_tarefa == TaskModel.idt_tarefa)\
@@ -124,6 +125,7 @@ def list_my_tasks(current_user, db: Session):
                 "nom_tarefa": t.nom_tarefa,
                 "des_tarefa": t.des_tarefa,
                 "ind_ativo": t.ind_ativo,
+                "idt_status": t.idt_status,
                 "ind_status": t.ind_status
             }
             for t in query.all()
@@ -135,6 +137,62 @@ def list_my_tasks(current_user, db: Session):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Erro ao listar tarefas"
+        )
+
+def update_task(idt_tarefa: int, body, current_user, db: Session):
+    try:
+        task = db.query(TaskModel).filter(TaskModel.idt_tarefa == idt_tarefa).first()
+
+        if not task:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Tarefa não encontrada"
+            )
+
+        if task.idt_usuario != current_user.idt_usuario:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Acesso negado: você não é o dono desta tarefa"
+            )
+
+        status_exists = db.query(StatusModel).filter(StatusModel.idt_status == body.idt_status).first()
+        if not status_exists:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Status não encontrado"
+            )
+
+        task.nom_tarefa = body.nom_tarefa
+        task.des_tarefa = body.des_tarefa
+
+        history = HistoryModel(
+            idt_status=body.idt_status,
+            idt_tarefa=idt_tarefa
+        )
+
+        db.add(history)
+        db.commit()
+        db.refresh(task)
+
+        return {
+            "message": "Tarefa atualizada com sucesso",
+            "task": {
+                "idt_tarefa": task.idt_tarefa,
+                "nom_tarefa": task.nom_tarefa,
+                "des_tarefa": task.des_tarefa,
+                "ind_ativo": task.ind_ativo,
+                "idt_status": body.idt_status,
+                "ind_status": status_exists.ind_status
+            }
+        }
+
+    except HTTPException:
+        raise
+    except Exception:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Erro ao atualizar tarefa"
         )
 
 def delete_task(idt_tarefa: int, current_user, db: Session):

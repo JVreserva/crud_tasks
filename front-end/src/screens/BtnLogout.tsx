@@ -27,14 +27,11 @@ const BtnLogout: React.FC = () => {
 
 const styles = StyleSheet.create({
   button: {
-    position: 'absolute',
-    top: 20,
-    right: 20,
     backgroundColor: "#ff4d4d",
-    padding: 10,
+    paddingHorizontal: 15,
+    paddingVertical: 8,
     borderRadius: 5,
-    alignItems: "center",
-    zIndex: 1,
+    marginRight: 10,
   },
   buttonText: {
     color: "#fff",
