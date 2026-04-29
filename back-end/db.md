@@ -10,7 +10,13 @@ CREATE TABLE t_tarefa (
     idt_tarefa SERIAL PRIMARY KEY,
     nom_tarefa VARCHAR(255) NOT NULL,
     des_tarefa TEXT,
-    ind_ativo BOOLEAN DEFAULT TRUE
+    ind_ativo BOOLEAN DEFAULT TRUE,
+    idt_usuario INT,
+
+    CONSTRAINT fk_tarefa_usuario
+        FOREIGN KEY (idt_usuario)
+        REFERENCES t_usuario(idt_usuario)
+        ON DELETE SET NULL
 );
 
 -- T_STATUS

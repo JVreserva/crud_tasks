@@ -16,9 +16,10 @@ tasks_routes = APIRouter(prefix="/tasks", tags=["tasks"])
 @tasks_routes.post("/create", status_code=status.HTTP_201_CREATED)
 def create_task(
 	body: TaskCreateValidator,
-	db: Session = Depends(get_db)
+	db: Session = Depends(get_db),
+	current_user: UserModel = Depends(get_current_user)
 ):
-	return task_service.create_task(body, db)
+	return task_service.create_task(body, current_user, db)
 
 
 @tasks_routes.post("/{idt_tarefa}/history", status_code=status.HTTP_201_CREATED)
@@ -29,3 +30,20 @@ def create_history(
 	current_user: UserModel = Depends(get_current_user)
 ):
 	return task_service.create_history(idt_tarefa, body, current_user, db)
+
+
+@tasks_routes.get("/my-tasks")
+def list_my_tasks(
+	db: Session = Depends(get_db),
+	current_user: UserModel = Depends(get_current_user)
+):
+	return task_service.list_my_tasks(current_user, db)
+
+
+@tasks_routes.delete("/{idt_tarefa}", status_code=status.HTTP_200_OK)
+def delete_task(
+	idt_tarefa: int,
+	db: Session = Depends(get_db),
+	current_user: UserModel = Depends(get_current_user)
+):
+	return task_service.delete_task(idt_tarefa, current_user, db)

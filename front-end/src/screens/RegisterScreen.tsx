@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-
+import { useNavigation } from '@react-navigation/native';
+import ApiService from '../services/api';
+import { AuthRequest } from '../types/auth';
 
 const RegisterScreen: React.FC = () => {
+  const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (!email || !password || !confirmPassword) {
       Alert.alert('Erro', 'Por favor, preencha todos os campos.');
       return;
@@ -15,6 +19,22 @@ const RegisterScreen: React.FC = () => {
     if (password !== confirmPassword) {
       Alert.alert('Erro', 'As senhas não coincidem.');
       return;
+    }
+
+    setIsLoading(true);
+    try {
+      const payload: AuthRequest = { email, password };
+      const response = await ApiService.register(payload);
+      Alert.alert('Sucesso', response.message, [
+        {
+          text: 'OK',
+          onPress: () => navigation.navigate('Login' as never),
+        },
+      ]);
+    } catch (err: any) {
+      Alert.alert('Erro', err.response?.data?.message || 'Falha ao registrar.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -43,8 +63,8 @@ const RegisterScreen: React.FC = () => {
         onChangeText={setConfirmPassword}
         secureTextEntry
       />
-      <TouchableOpacity style={styles.button} onPress={handleRegister}>
-        <Text style={styles.buttonText}>Registrar</Text>
+      <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={isLoading}>
+        <Text style={styles.buttonText}>{isLoading ? 'Registrando...' : 'Registrar'}</Text>
       </TouchableOpacity>
     </View>
   );

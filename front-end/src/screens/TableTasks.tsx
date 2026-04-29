@@ -1,12 +1,6 @@
 import React from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
-
-export type Task = {
-  idt_tarefa: number;
-  nom_tarefa: string;
-  dat_criacao: string;
-  des_descricao: string;
-};
+import { Task } from '../types/task';
 
 interface TableTasksProps {
   data: Task[];
@@ -24,8 +18,8 @@ const TableTasks: React.FC<TableTasksProps> = ({
   const renderItem = ({ item }: { item: Task }) => (
     <View style={styles.row}>
       <Text style={styles.cell}>{item.nom_tarefa}</Text>
-      <Text style={styles.cell}>{item.dat_criacao}</Text>
-      <Text style={styles.cell}>{item.des_descricao}</Text>
+      <Text style={styles.cell}>{item.ind_status ?? '—'}</Text>
+      <Text style={styles.cell}>{item.des_tarefa}</Text>
 
       <View style={styles.actions}>
         <TouchableOpacity onPress={() => onView?.(item)}>
@@ -48,7 +42,7 @@ const TableTasks: React.FC<TableTasksProps> = ({
       {/* HEADER FIXO */}
       <View style={styles.header}>
         <Text style={[styles.cell, styles.headerCell]}>Tarefa</Text>
-        <Text style={[styles.cell, styles.headerCell]}>Data criação</Text>
+        <Text style={[styles.cell, styles.headerCell]}>Status</Text>
         <Text style={[styles.cell, styles.headerCell]}>Descrição</Text>
         <Text style={[styles.actions, styles.headerCell]}>Ações</Text>
       </View>
@@ -56,7 +50,8 @@ const TableTasks: React.FC<TableTasksProps> = ({
       <FlatList
         data={data}
         renderItem={renderItem}
-        keyExtractor={(item) => item.idt_tarefa.toString()}
+        keyExtractor={(item, index) => item.idt_tarefa?.toString() ?? index.toString()
+        }
       />
     </View>
   );

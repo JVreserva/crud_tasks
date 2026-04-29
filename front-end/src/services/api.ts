@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LoginRequest, LoginResponse } from '../types/auth';
+import { AuthRequest, LoginResponse, RegisterResponse } from '../types/auth';
+import { CreateTaskRequest } from '../types/task';
 
 class ApiService {
   private api: AxiosInstance;
@@ -43,8 +44,33 @@ class ApiService {
     return ApiService.instance;
   }
 
-  public async login(data: LoginRequest): Promise<LoginResponse> {
+  public async register(data: AuthRequest): Promise<RegisterResponse> {
+    const response: AxiosResponse<RegisterResponse> = await this.api.post('/users/register', data);
+    return response.data;
+  }
+
+  public async login(data: AuthRequest): Promise<LoginResponse> {
     const response: AxiosResponse<LoginResponse> = await this.api.post('/users/login', data);
+    return response.data;
+  }
+
+  public async logout(): Promise<any> {
+    const response: AxiosResponse<any> = await this.api.post('/users/logout');
+    return response.data;
+  }
+
+  public async createTask(data: CreateTaskRequest): Promise<any> {
+    const response: AxiosResponse<any> = await this.api.post('/tasks/create', data);
+    return response.data;
+  }
+
+  public async list_my_tasks(): Promise<any> {
+    const response: AxiosResponse<any> = await this.api.get('/tasks/my-tasks');
+    return response.data;
+  }
+
+  public async deleteTask(idt_tarefa: number): Promise<any> {
+    const response: AxiosResponse<any> = await this.api.delete(`/tasks/${idt_tarefa}`);
     return response.data;
   }
 

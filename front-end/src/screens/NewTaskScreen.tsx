@@ -1,14 +1,45 @@
 import React from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '../contexts/AuthContext';
+import taskService from '../services/taskService';
 
 const NewTaskScreen: React.FC = () => {
+  const navigation = useNavigation();
+  const { user } = useAuth();
   const [taskName, setTaskName] = React.useState('');
   const [description, setDescription] = React.useState('');
+  const [isLoading, setIsLoading] = React.useState(false);
 
-  const handleCreateTask = () => {
+  const handleCreateTask = async () => {
     if (!taskName || !description) {
       Alert.alert('Erro', 'Por favor, preencha todos os campos.');
       return;
+    }
+
+    if (!user) {
+      Alert.alert('Erro', 'Usuário não autenticado.');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await taskService.createTask({
+        nom_tarefa: taskName,
+        des_tarefa: description,
+        idt_usuario: user.id,
+      });
+
+      Alert.alert('Sucesso', 'Tarefa criada com sucesso.', [
+        {
+          text: 'OK',
+          onPress: () => navigation.goBack(),
+        },
+      ]);
+    } catch (error: any) {
+      Alert.alert('Erro', error.response?.data?.message || 'Falha ao criar tarefa.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -28,8 +59,12 @@ const NewTaskScreen: React.FC = () => {
         onChangeText={setDescription}
         multiline
       />
-      <TouchableOpacity style={styles.button} onPress={handleCreateTask}>
-        <Text style={styles.buttonText}>Criar Tarefa</Text>
+      <TouchableOpacity style={styles.button} onPress={handleCreateTask} disabled={isLoading}>
+        {isLoading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Criar Tarefa</Text>
+        )}
       </TouchableOpacity>
     </View>
   );

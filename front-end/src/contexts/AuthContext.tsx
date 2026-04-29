@@ -64,6 +64,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = async () => {
+    try {
+      await ApiService.logout();
+    } catch (error) {
+      console.warn('Erro ao fazer logout no servidor:', error);
+    }
     await AsyncStorage.removeItem('access_token');
     setUser(null);
   };
